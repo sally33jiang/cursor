@@ -35,8 +35,8 @@ allure open api_tests/reports/allure-report
 
 ## 示例说明
 
-- `testcases/test_login.py` 展示了：
-  - 测试数据从 `data/login_cases.yaml` 读取
-  - 用户凭证从 `config/environments.yaml` 读取
-  - 登录请求从 `ops/login_ops.py` 调用
-  - 数据与操作和公共配置完全分离
+- `testcases/test_create_order.py` 展示了：
+  - 下单数据从 `data/create_order_cases.yaml` 读取
+  - 请求结构使用官方格式：`appToken/appKey/serviceMethod/paramsJson`
+  - `reference_no` 在运行时自动生成唯一值，避免重复冲突
+  - 下单请求从 `ops/order_ops.py` 统一封装

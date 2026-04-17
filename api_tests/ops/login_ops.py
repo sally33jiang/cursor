@@ -4,10 +4,10 @@ from common.http_client import HttpClient
 
 
 @allure.step("执行登录请求")
-def do_login(http_client: HttpClient, username: str, password: str):
+def do_login(http_client: HttpClient, path: str, form: dict, headers: dict | None = None):
     return http_client.request(
         method="POST",
-        path="/usercenter/manager/login.aspx",
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
-        form={"username": username, "password": password},
+        path=path,
+        headers=headers or {"Content-Type": "application/x-www-form-urlencoded"},
+        form=form,
     )
