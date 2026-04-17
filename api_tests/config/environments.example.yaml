@@ -1,0 +1,20 @@
+environments:
+  - name: "TT客户"
+    base_url: "http://oms-dev2.ydhex.com"
+    api_url: "http://oms-dev.ydhex.com/webservice/PublicService.asmx/ServiceInterfaceUTF8"
+    credentials:
+      appToken: "REPLACE_WITH_APP_TOKEN"
+      appKey: "REPLACE_WITH_APP_KEY"
+      username: "REPLACE_WITH_USERNAME"
+      password: "REPLACE_WITH_PASSWORD"
+    database:
+      host: "REPLACE_WITH_DB_HOST"
+      port: 3306
+      user: "REPLACE_WITH_DB_USER"
+      password: "REPLACE_WITH_DB_PASSWORD"
+      database: "REPLACE_WITH_DB_NAME"
+      charset: "utf8mb4"
+      pre_sql:
+        - "UPDATE sys_system_config SET config_value=1 WHERE config_key='TIKTOK_CUSTOMERS'"
+      rollback_sql:
+        - "UPDATE sys_system_config SET config_value=0 WHERE config_key='TIKTOK_CUSTOMERS'"

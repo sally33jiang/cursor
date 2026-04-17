@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MBTI色彩×星座 深度匹配测试</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+      :root {
+        --bg: #0f1226;
+        --card: #181d3b;
+        --card-2: #202752;
+        --text: #f4f6ff;
+        --sub: #b8c0ff;
+        --accent: #7f8cff;
+        --ok: #45d19f;
+        --danger: #ff7a96;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+        background: radial-gradient(circle at top right, #2a2f66, var(--bg) 40%);
+        color: var(--text);
+      }
+      .wrap {
+        max-width: 980px;
+        margin: 24px auto 40px;
+        padding: 0 16px;
+      }
+      .card {
+        background: linear-gradient(145deg, var(--card), var(--card-2));
+        border: 1px solid #303b7a;
+        border-radius: 16px;
+        padding: 18px;
+        margin-bottom: 16px;
+      }
+      h1, h2, h3, p { margin: 0 0 10px; }
+      h1 { font-size: 28px; }
+      h2 { font-size: 20px; margin-bottom: 14px; }
+      h3 { font-size: 17px; margin-bottom: 10px; color: #d7dcff; }
+      .desc { color: var(--sub); line-height: 1.7; }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
+      }
+      label { display: block; margin-bottom: 6px; font-size: 14px; color: #c8ceff; }
+      input, select {
+        width: 100%;
+        background: #121737;
+        color: var(--text);
+        border: 1px solid #3a468f;
+        border-radius: 10px;
+        padding: 10px 12px;
+        outline: none;
+      }
+      .radio-row { display: flex; flex-wrap: wrap; gap: 10px; }
+      .radio-pill {
+        border: 1px solid #4150a0;
+        border-radius: 999px;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      .radio-pill input { width: auto; margin-right: 6px; }
+      .q {
+        border: 1px solid #344188;
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 10px;
+      }
+      .q-title { font-weight: 700; margin-bottom: 8px; }
+      .btn {
+        border: none;
+        border-radius: 10px;
+        padding: 11px 16px;
+        color: white;
+        cursor: pointer;
+        font-size: 15px;
+        margin-right: 10px;
+      }
+      .btn-main { background: linear-gradient(90deg, #6f7dff, #9876ff); }
+      .btn-sub { background: #2a3166; border: 1px solid #4b58b8; }
+      .poster {
+        background: linear-gradient(160deg, #151a38, #22295a 60%, #30307a);
+        border-radius: 16px;
+        padding: 18px;
+        border: 1px solid #4d57ad;
+      }
+      .score {
+        font-size: 30px;
+        font-weight: 800;
+        color: #ffe176;
+      }
+      .tag {
+        display: inline-block;
+        background: #2a336e;
+        border: 1px solid #4a58b9;
+        border-radius: 999px;
+        padding: 3px 10px;
+        margin-right: 8px;
+        margin-bottom: 8px;
+        font-size: 13px;
+      }
+      .warn { color: #ffd0d9; margin-top: 8px; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel">
+      const MBTI_TYPES = [
+        "ISTJ","ISFJ","INFJ","INTJ","ISTP","ISFP","INFP","INTP",
+        "ESTP","ESFP","ENFP","ENTP","ESTJ","ESFJ","ENFJ","ENTJ"
+      ];
+      const ZODIAC = [
+        "白羊","金牛","双子","巨蟹","狮子","处女","天秤","天蝎","射手","摩羯","水瓶","双鱼"
+      ];
+      const COLOR_GROUPS = {
+        红人: ["ESTP", "ESFP", "ESTJ", "ESFJ"],
+        黄人: ["ENFP", "ENFJ", "ESFP", "ESTP"],
+        绿人: ["INFP", "INFJ", "ISFP", "ISFJ"],
+        紫人: ["INTJ", "INTP", "ENTP", "ENTJ"]
+      };
+      const ZODIAC_ELEMENT = {
+        白羊:"火象", 狮子:"火象", 射手:"火象",
+        金牛:"土象", 处女:"土象", 摩羯:"土象",
+        双子:"风象", 天秤:"风象", 水瓶:"风象",
+        巨蟹:"水象", 天蝎:"水象", 双鱼:"水象"
+      };
+      const ELEMENT_SIGN = {
+        火象: ["白羊","狮子","射手"],
+        土象: ["金牛","处女","摩羯"],
+        风象: ["双子","天秤","水瓶"],
+        水象: ["巨蟹","天蝎","双鱼"]
+      };
+      const LOVE_RULE = {
+        紫人: { group: "黄人", elements: ["火象","风象"], reason: "你偏理性独立，黄人更能提供情绪温度与互动活力，火/风象既有趣又尊重边界。" },
+        黄人: { group: "紫人", elements: ["水象","土象"], reason: "你热情感性，紫人能给稳定框架，水/土象提供持续安全感与情绪托底。" },
+        绿人: { group: "红人", elements: ["土象","水象"], reason: "你细腻慢热，红人更主动推进关系，土/水象的包容能让你安心表达。" },
+        红人: { group: "绿人", elements: ["火象","风象"], reason: "你行动派、表达直接，绿人能柔化冲突，火/风象让关系持续有新鲜感。" }
+      };
+      const FRIEND_RULE = {
+        紫人: { group: "紫人", elements: ["风象"], reason: "你们重深度和思维同频，风象沟通轻盈，精神默契高。" },
+        黄人: { group: "黄人", elements: ["火象"], reason: "节奏一致、快乐放大，火象能与你形成高能社交搭子。" },
+        绿人: { group: "绿人", elements: ["水象"], reason: "彼此细腻共情，水象让情绪承接更稳定、陪伴更治愈。" },
+        红人: { group: "红人", elements: ["土象"], reason: "目标一致、执行力强，土象让关系更可靠耐久。" }
+      };
+      const QUESTIONS = [
+        ["认识新朋友时","主动搭话，很快熟络","观察为主，慢热谨慎"],
+        ["做决定更依赖","逻辑、道理、现实条件","感觉、情绪、内心喜好"],
+        ["更喜欢的相处模式","热闹陪伴，经常见面聊天","安静自在，有各自空间"],
+        ["面对计划","提前安排，讨厌突发变动","随性随缘，喜欢惊喜变化"],
+        ["情绪外露程度","开心不开心都写在脸上","习惯藏心里，自己消化"],
+        ["看待感情","务实稳定，细水长流","浪漫心动，注重感觉"],
+        ["遇到矛盾","直接沟通，快速解决","回避冲突，需要冷静期"],
+        ["更喜欢的朋友","有趣好玩，能带动气氛","温柔细腻，能倾听心事"],
+        ["对未来态度","现实规划，步步为营","理想主义，相信可能性"],
+        ["社交偏好","大圈子、多人聚会","小圈子、深度交心"],
+        ["表达关心方式","行动照顾、解决问题","语言安慰、情绪陪伴"],
+        ["压力下你会","向外倾诉、找人陪伴","向内独处、自我恢复"],
+        ["你更在意","效率、结果、规则","氛围、感受、关系"],
+        ["对待新鲜感","容易腻，偏爱长久稳定","喜欢新奇，讨厌一成不变"],
+        ["你在关系里更像","照顾别人的一方","被照顾的一方"],
+        ["对灵魂契合的理解","三观一致、相处舒服","精神共鸣、彼此懂得"]
+      ];
+      const SCORE_DIMENSIONS = [
+        "E","T","E","J","E","S","T","E","S","E","T","E","T","P","A","N"
+      ];
+
+      function getColorGroup(mbti) {
+        const matched = Object.keys(COLOR_GROUPS).filter((k) => COLOR_GROUPS[k].includes(mbti));
+        if (matched.length <= 1) return matched[0] || "未知";
+        if (matched.includes("黄人")) return "黄人";
+        return matched[0];
+      }
+
+      function scoreByAnswers(ans, mbti, element) {
+        const base = 68;
+        let extro = 0, think = 0, stable = 0, resonance = 0;
+        ans.forEach((a, i) => {
+          const val = a === "A" ? 1 : -1;
+          const d = SCORE_DIMENSIONS[i];
+          if (d === "E") extro += val;
+          if (d === "T") think += val;
+          if (d === "J" || d === "S") stable += val;
+          if (d === "A" || d === "N" || d === "P") resonance += (a === "B" ? 1 : 0);
+        });
+        const isE = mbti.startsWith("E");
+        const isT = mbti.includes("T");
+        const stableBonus = ["土象","水象"].includes(element) ? 4 : 2;
+        let score = base;
+        score += Math.max(0, 8 - Math.abs(extro - (isE ? 4 : -4)));
+        score += Math.max(0, 8 - Math.abs(think - (isT ? 3 : -3)));
+        score += Math.max(0, 8 - Math.abs(stable)) + stableBonus;
+        score += Math.min(8, resonance + 2);
+        return Math.max(72, Math.min(99, score));
+      }
+
+      function picksForGroup(group) {
+        return COLOR_GROUPS[group] || [];
+      }
+
+      function getApiBase() {
+        if (window.__API_BASE__ && typeof window.__API_BASE__ === "string") {
+          return window.__API_BASE__.replace(/\/$/, "");
+        }
+        if (location.protocol.startsWith("http")) {
+          return location.origin;
+        }
+        return "http://127.0.0.1:8000";
+      }
+
+      async function requestMatch(payload, timeoutMs = 10000) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          const resp = await fetch(`${getApiBase()}/api/match`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+            signal: controller.signal
+          });
+          const data = await resp.json().catch(() => ({}));
+          if (!resp.ok) {
+            if (resp.status >= 500) throw new Error("服务繁忙，请稍后再试。");
+            throw new Error(data.detail || "请求参数有误，请检查后重试。");
+          }
+          return data;
+        } catch (err) {
+          if (err.name === "AbortError") {
+            throw new Error("请求超时，请检查网络或稍后重试。");
+          }
+          if (err instanceof TypeError) {
+            throw new Error("无法连接后端服务，请确认接口已启动。");
+          }
+          throw err;
+        } finally {
+          clearTimeout(timer);
+        }
+      }
+
+      function App() {
+        const [form, setForm] = React.useState({
+          nickname: "",
+          birth: "",
+          zodiac: "白羊",
+          mbti: "INFJ",
+          orientation: "两者都想要",
+          social: "看情况"
+        });
+        const [answers, setAnswers] = React.useState(Array(16).fill(""));
+        const [result, setResult] = React.useState(null);
+        const [error, setError] = React.useState("");
+        const [loading, setLoading] = React.useState(false);
+
+        const update = (k, v) => setForm((s) => ({ ...s, [k]: v }));
+
+        async function calculate() {
+          if (!form.nickname || !form.birth) {
+            setError("请先填写昵称和出生年月日。");
+            return;
+          }
+          if (answers.some((a) => !a)) {
+            setError("16 道题需要全部作答后才能生成报告。");
+            return;
+          }
+          setError("");
+          setLoading(true);
+          try {
+            const data = await requestMatch({ ...form, answers });
+            setResult(data);
+          } catch (e) {
+            setResult(null);
+            setError(e.message || "请求失败，请确认后端服务已启动。");
+          } finally {
+            setLoading(false);
+          }
+        }
+
+        function resetAll() {
+          setAnswers(Array(16).fill(""));
+          setResult(null);
+          setError("");
+        }
+
+        return (
+          <div className="wrap">
+            <div className="card">
+              <h1>🌈 MBTI色彩 × 星座 深度匹配测试</h1>
+              <p className="desc">恋爱伴侣 + 灵魂闺蜜双匹配 ｜ 16题性格测试 ｜ 完整匹配依据 + 适配分数</p>
+            </div>
+
+            <div className="card">
+              <h2>第一部分：基础信息</h2>
+              <div className="grid">
+                <div>
+                  <label>昵称</label>
+                  <input value={form.nickname} onChange={(e) => update("nickname", e.target.value)} placeholder="请输入昵称" />
+                </div>
+                <div>
+                  <label>出生年月日</label>
+                  <input type="date" value={form.birth} onChange={(e) => update("birth", e.target.value)} />
+                </div>
+                <div>
+                  <label>星座</label>
+                  <select value={form.zodiac} onChange={(e) => update("zodiac", e.target.value)}>
+                    {ZODIAC.map((z) => <option key={z} value={z}>{z}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label>MBTI</label>
+                  <select value={form.mbti} onChange={(e) => update("mbti", e.target.value)}>
+                    {MBTI_TYPES.map((m) => <option key={m} value={m}>{m}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <label>情感取向</label>
+                <div className="radio-row">
+                  {["恋爱为主","闺蜜为主","两者都想要"].map((x) => (
+                    <label className="radio-pill" key={x}>
+                      <input type="radio" checked={form.orientation === x} onChange={() => update("orientation", x)} />{x}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <label>日常社交状态</label>
+                <div className="radio-row">
+                  {["偏外向","偏内向","看情况"].map((x) => (
+                    <label className="radio-pill" key={x}>
+                      <input type="radio" checked={form.social === x} onChange={() => update("social", x)} />{x}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="card">
+              <h2>第二部分：16题性格测试（单选 A/B）</h2>
+              {QUESTIONS.map((q, i) => (
+                <div className="q" key={q[0]}>
+                  <div className="q-title">{i + 1}. {q[0]}</div>
+                  <div className="radio-row">
+                    <label className="radio-pill">
+                      <input type="radio" name={`q-${i}`} checked={answers[i] === "A"} onChange={() => setAnswers((s) => s.map((v, idx) => idx === i ? "A" : v))} />
+                      A {q[1]}
+                    </label>
+                    <label className="radio-pill">
+                      <input type="radio" name={`q-${i}`} checked={answers[i] === "B"} onChange={() => setAnswers((s) => s.map((v, idx) => idx === i ? "B" : v))} />
+                      B {q[2]}
+                    </label>
+                  </div>
+                </div>
+              ))}
+              <div style={{ marginTop: 12 }}>
+                <button className="btn btn-main" onClick={calculate} disabled={loading}>{loading ? "生成中..." : "生成匹配报告"}</button>
+                <button className="btn btn-sub" onClick={resetAll}>重置测试</button>
+                {error && <div className="warn">{error}</div>}
+              </div>
+            </div>
+
+            {result && (
+              <div className="card poster">
+                <h2>🌈 你的专属深度匹配报告</h2>
+                <h3>1. 基础档案</h3>
+                <p><span className="tag">昵称：{result?.profile?.nickname ?? "--"}</span><span className="tag">星座：{result?.profile?.zodiac ?? "--"}</span><span className="tag">星座象限：{result?.profile?.element ?? "--"}</span></p>
+                <p><span className="tag">MBTI：{result?.profile?.mbti ?? "--"}</span><span className="tag">色彩分组：{result?.profile?.color ?? "--"}</span><span className="tag">情感取向：{result?.profile?.orientation ?? "--"}</span></p>
+                <h3>2. 性格关键词</h3>
+                <p>{result?.keywords?.join("、") ?? "--"}</p>
+
+                <h3 style={{ marginTop: 16 }}>💘 最佳恋爱伴侣匹配</h3>
+                <p>适配MBTI色彩：{result?.love?.group ?? "--"} ｜ 适配星座象限：{result?.love?.elements?.join(" / ") ?? "--"}</p>
+                <p>推荐星座：{result?.love?.recommended_zodiac?.join("、") ?? "--"}</p>
+                <p>推荐MBTI类型：{result?.love?.recommended_mbti?.join("、") ?? "--"}</p>
+                <p>匹配依据：{result?.love?.reason ?? "--"}</p>
+                <p className="score">适配分数：{result?.love?.score ?? "--"} 分</p>
+
+                <h3 style={{ marginTop: 16 }}>👯 最佳灵魂闺蜜匹配</h3>
+                <p>适配MBTI色彩：{result?.friend?.group ?? "--"} ｜ 适配星座象限：{result?.friend?.elements?.join(" / ") ?? "--"}</p>
+                <p>推荐星座：{result?.friend?.recommended_zodiac?.join("、") ?? "--"}</p>
+                <p>推荐MBTI类型：{result?.friend?.recommended_mbti?.join("、") ?? "--"}</p>
+                <p>匹配依据：{result?.friend?.reason ?? "--"}</p>
+                <p className="score">适配分数：{result?.friend?.score ?? "--"} 分</p>
+
+                <h3 style={{ marginTop: 16 }}>🧠 深度关系解读</h3>
+                <p>1. 你在感情里的核心需求：{result?.insight?.core_need ?? "--"}</p>
+                <p>2. 你容易踩雷的点：{result?.insight?.risk_point ?? "--"}</p>
+                <p>3. 为什么你们天生合拍：{result?.insight?.why_match ?? "--"}</p>
+                <p>4. 相处建议：{result?.insight?.advice ?? "--"}</p>
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

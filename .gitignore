@@ -1,0 +1,4 @@
+api_tests/config/environments.yaml
+api_tests/reports/
+__pycache__/
+*.pyc

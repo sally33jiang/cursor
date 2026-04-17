@@ -1,0 +1,16 @@
+cases:
+  - case_id: "login_001"
+    title: "TT客户账号登录成功"
+    description: "使用账号密码登录并断言成功标识"
+    request:
+      method: "POST"
+      path: "/usercenter/manager/login.aspx"
+      headers:
+        Content-Type: "application/x-www-form-urlencoded"
+      form:
+        username: "${username}"
+        password: "${password}"
+    validate:
+      status_code: 200
+      contains:
+        - "success"
